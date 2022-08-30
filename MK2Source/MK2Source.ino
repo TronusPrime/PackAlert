@@ -14,7 +14,7 @@ DFRobot_BMI160 bmi160;
 bool armed = false;
 bool triggered = false;
 unsigned long prevReadTime = 0;
-const String uid = "93 45 F2 94";
+const String uid = "";//"93 45 F2 94";
 String nfcData = "";
 int rslt;
 int16_t accelGyro[6] = {0};
@@ -66,11 +66,19 @@ void loop() {
   rslt = bmi160.getAccelGyroData(accelGyro);
   nfcData = readNFCTag(mfrc522);
 
-  if (millis() - prevReadTime > MINDELAY) {
-    if (nfcData.substring(1) == uid) // Make sure you change this with your own UID number
-    {
-      Serial.println(nfcData);
+  if (millis() - prevReadTime > MINDELAY && nfcData != "") {
+    if (!armed) {
+      armed = true;
+      uid = nfcData.substring(1);
+    } else if (nfcData.substring(1) == uid) {
+      armed = false;
     }
+  }
+
+  if (armed) {
+    digitalWrite(LED1, HIGH);
+  } else {
+    digitalWrite(LED1, LOW);
   }
 
   // Must be after all usages of 'prevReadTime'
